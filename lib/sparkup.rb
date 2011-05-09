@@ -2,13 +2,19 @@ module Redcar
 
     class Sparkup
 
+        # Default sparkup command, if OS has Python
         @@sparkup_cmd = "sparkup/sparkup --post-tag-guides"
 
         def initialize
 
+            # Set the menu item
             self.menus
+
+            # Set the keybindings
+            # TODO: Make the keybindings as a preference
             self.keymaps
 
+            # Jython fallback if Python isn't installed
             unless self.hasPython
                 @@sparkup_cmd = "java -jar jython/jython.jar sparkup/sparkup"
             end
@@ -16,7 +22,6 @@ module Redcar
 
         # Get Sparkup's cmd
         def self.getCmd
-
             @@sparkup_cmd
         end
 
@@ -80,9 +85,14 @@ module Redcar
 
                     cmd = Sparkup.getCmd
                     dir = "#{Redcar.user_dir}/plugins/sparkup/assets"
+                    startLine = doc.cursor_offset
 
+                    # Run the command
                     resp = `cd #{dir} && echo '#{ltext}' | #{cmd}`
-                    doc.cursor_offset = doc.cursor_line_start_offset
+
+                    # Set the cursor to the start of the line
+                    # TODO: Add tab positions like snippets
+                    doc.cursor_offset = startLine
                     resp
                 end
             end
