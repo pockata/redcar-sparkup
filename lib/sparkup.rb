@@ -2,8 +2,12 @@ module Redcar
 
     class Sparkup
 
+        def self.plugin_dir
+          File.join(File.dirname(__FILE__), "..")
+        end
+
         # Default sparkup command, if OS has Python
-        @@sparkup_cmd = "sparkup/sparkup --post-tag-guides"
+        @@sparkup_cmd = "#{Sparkup.plugin_dir}/assets/sparkup/sparkup"
 
         def initialize
 
@@ -16,7 +20,7 @@ module Redcar
 
             # Jython fallback if Python isn't installed
             unless self.hasPython
-                @@sparkup_cmd = "java -jar jython/jython.jar sparkup/sparkup"
+                @@sparkup_cmd = "java -jar #{Sparkup.plugin_dir}/jython/jython.jar #{Sparkup.plugin_dir}/assets/sparkup/sparkup"
             end
         end
 
@@ -65,12 +69,12 @@ module Redcar
             def execute
 
                 Project::Manager.open_project_for_path(
-                    File.join(Redcar.user_dir, "plugins", "sparkup")
+                    File.join(File.dirname(__FILE__), "..")
                 )
 
                 tab = Redcar.app.focussed_window.new_tab(Redcar::EditTab)
                 mirror = Project::FileMirror.new(File.join(
-                    Redcar.user_dir, "plugins", "sparkup", "lib", "sparkup.rb"
+                    File.join(Sparkup.plugin_dir, "lib", "sparkup.rb")
                 ))
                 tab.edit_view.document.mirror = mirror
                 tab.edit_view.reset_undo
@@ -84,11 +88,12 @@ module Redcar
                 doc.replace_line(doc.cursor_line) do |ltext|
 
                     cmd = Sparkup.getCmd
-                    dir = "#{Redcar.user_dir}/plugins/sparkup/assets"
+                    dir = "#{Sparkup.plugin_dir}/assets"
                     startLine = doc.cursor_offset
 
                     # Run the command
-                    resp = `cd #{dir} && echo '#{ltext}' | #{cmd}`
+                    cmd =  "cd #{dir} && echo '#{ltext}' | #{cmd}"
+                    resp = `#{cmd}`
 
                     # Set the cursor to the start of the line
                     # TODO: Add tab positions like snippets
